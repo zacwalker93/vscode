@@ -784,7 +784,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 		windowConfiguration.fullscreen = this.isFullScreen;
 
 		// Set Accessibility Config
-		windowConfiguration.colorScheme = (nativeTheme.shouldUseInvertedColorScheme || nativeTheme.shouldUseHighContrastColors) ? ColorScheme.HIGH_CONTRAST : nativeTheme.shouldUseDarkColors ? ColorScheme.DARK : ColorScheme.LIGHT;
+		windowConfiguration.colorScheme = this.isHighContrastTheme() ? ColorScheme.HIGH_CONTRAST : nativeTheme.shouldUseDarkColors ? ColorScheme.DARK : ColorScheme.LIGHT;
 		windowConfiguration.autoDetectHighContrast = windowConfig?.autoDetectHighContrast ?? true;
 		windowConfiguration.accessibilitySupport = app.accessibilitySupportEnabled;
 
@@ -823,6 +823,16 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 		}
 
 		return configUrl;
+	}
+
+	private isHighContrastTheme(): boolean {
+		if (isMacintosh) {
+			// macOS: require both inverted and high contrast coors
+			// https://github.com/microsoft/vscode/issues/107359
+			return nativeTheme.shouldUseInvertedColorScheme && nativeTheme.shouldUseHighContrastColors;
+		}
+
+		return nativeTheme.shouldUseInvertedColorScheme || nativeTheme.shouldUseHighContrastColors;
 	}
 
 	private doGetUrl(config: object): string {
