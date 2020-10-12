@@ -89,7 +89,8 @@ export interface ISCMInput {
 	showPreviousValue(): void;
 	readonly repository: ISCMRepository;
 
-	value: string;
+	readonly value: string;
+	setValue(value: string, fromKeyboard: boolean): void;
 	readonly onDidChange: Event<string>;
 
 	placeholder: string;

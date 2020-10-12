@@ -1314,7 +1314,7 @@ export class SCMInputWidget extends Disposable {
 		// Keep API in sync with model, update placeholder visibility and validate
 		const updatePlaceholderVisibility = () => this.placeholderTextContainer.classList.toggle('hidden', textModel.getValueLength() > 0);
 		this.repositoryDisposables.add(textModel.onDidChangeContent(() => {
-			input.value = textModel.getValue();
+			input.setValue(textModel.getValue(), true);
 			updatePlaceholderVisibility();
 			triggerValidation();
 		}));

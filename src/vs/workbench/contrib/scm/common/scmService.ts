@@ -19,7 +19,22 @@ class SCMInput implements ISCMInput {
 		return this._value;
 	}
 
-	set value(value: string) {
+	/**
+	 * ''
+	 * 'h', true
+	 * 'hi', true
+	 * '', false (git extension), REMEMBER 'hi'
+	 * 'template contents', false (git extension), we shouldn't add this to history because the last one was false
+	 * 'template contents cool', false (git extension), we shouldn't add this to history because the last one was false
+	 * 'template contents cool ', true
+	 * 'template contents cool 1', true
+	 * 'template contents cool 1 ', true
+	 * 'template contents cool 1 2', true
+	 * 'template contents cool', false (git extension), REMEMBER 'template contents cool 1 2'
+	 */
+	setValue(value: string, fromKeyboard: boolean): void {
+		// logic
+		// we only want to remember values once fromKeyboard is false
 		if (value === this._value) {
 			return;
 		}
