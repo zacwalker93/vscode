@@ -16,6 +16,7 @@ import { ILabelService } from 'vs/platform/label/common/label';
 import { ILogService } from 'vs/platform/log/common/log';
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import * as platform from 'vs/base/common/platform';
+import * as browser from 'vs/base/browser/browser';
 import * as dom from 'vs/base/browser/dom';
 import { URI } from 'vs/base/common/uri';
 import { IExtensionHost, ExtensionHostLogFileName, ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensions';
@@ -68,7 +69,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
 		this._isTerminating = false;
 		this._protocolPromise = null;
 		this._protocol = null;
-		this._extensionHostLogsLocation = URI.file(this._environmentService.logsPath).with({ scheme: this._environmentService.logFile.scheme });
+		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
 		this._extensionHostLogFile = joinPath(this._extensionHostLogsLocation, `${ExtensionHostLogFileName}.log`);
 	}
 
@@ -82,7 +83,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
 
 	public async start(): Promise<IMessagePassingProtocol> {
 		if (!this._protocolPromise) {
-			if (platform.isWeb && this._wrapInIframe()) {
+			if (platform.isWeb && !browser.isSafari && this._wrapInIframe()) {
 				this._protocolPromise = this._startInsideIframe();
 			} else {
 				this._protocolPromise = this._startOutsideIframe();
@@ -106,11 +107,11 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
 		const escapeAttribute = (value: string): string => {
 			return value.replace(/"/g, '&quot;');
 		};
-		const isBuilt = this._environmentService.isBuilt;
+		const forceHTTPS = (location.protocol === 'https:');
 		const html = `<!DOCTYPE html>
 <html>
 	<head>
-		<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-eval' '${WEB_WORKER_IFRAME.sha}' ${isBuilt ? 'https:' : 'http: https:'}; worker-src data:; connect-src ${isBuilt ? 'https:' : 'http: https:'}" />
+		<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-eval' '${WEB_WORKER_IFRAME.sha}' ${forceHTTPS ? 'https:' : 'http: https:'}; worker-src data:; connect-src ${forceHTTPS ? 'https:' : 'http: https:'}" />
 		<meta id="vscode-worker-src" data-value="${escapeAttribute(workerSrc)}" />
 		<meta id="vscode-web-worker-ext-host-id" data-value="${escapeAttribute(vscodeWebWorkerExtHostId)}" />
 	</head>
@@ -286,7 +287,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
 			version: this._productService.version,
 			parentPid: -1,
 			environment: {
-				isExtensionDevelopmentDebug: false, //todo@jrieken web
+				isExtensionDevelopmentDebug: this._environmentService.debugRenderer,
 				appName: this._productService.nameLong,
 				appUriScheme: this._productService.urlProtocol,
 				appLanguage: platform.language,
@@ -311,7 +312,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
 			logFile: this._extensionHostLogFile,
 			autoStart: initData.autoStart,
 			remote: {
-				authority: this._environmentService.configuration.remoteAuthority,
+				authority: this._environmentService.remoteAuthority,
 				connectionData: null,
 				isRemote: false
 			},

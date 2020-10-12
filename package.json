@@ -1,7 +1,7 @@
 {
   "name": "code-oss-dev",
-  "version": "1.50.0",
-  "distro": "122f46af8ad9c977be8bb3dc7f898c08cc8a8f28",
+  "version": "1.51.0",
+  "distro": "cc3a790df49bc6065e395ebb41d1ad64a6150a4d",
   "author": {
     "name": "Microsoft Corporation"
   },
@@ -91,6 +91,7 @@
     "@types/mocha": "2.2.39",
     "@types/node": "^12.11.7",
     "@types/sinon": "^1.16.36",
+    "@types/trusted-types": "^1.0.6",
     "@types/vscode-windows-registry": "^1.0.0",
     "@types/webpack": "^4.4.10",
     "@types/windows-foreground-love": "^0.3.0",
@@ -110,7 +111,7 @@
     "css-loader": "^3.2.0",
     "debounce": "^1.0.0",
     "deemon": "^1.4.0",
-    "electron": "9.3.0",
+    "electron": "9.2.1",
     "eslint": "6.8.0",
     "eslint-plugin-jsdoc": "^19.1.0",
     "event-stream": "3.3.4",

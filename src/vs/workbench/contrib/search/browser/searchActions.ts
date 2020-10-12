@@ -7,7 +7,6 @@ import * as DOM from 'vs/base/browser/dom';
 import { Action } from 'vs/base/common/actions';
 import { createKeybinding, ResolvedKeybinding } from 'vs/base/common/keyCodes';
 import { isWindows, OS } from 'vs/base/common/platform';
-import { repeat } from 'vs/base/common/strings';
 import * as nls from 'vs/nls';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { ILabelService } from 'vs/platform/label/common/label';
@@ -80,6 +79,13 @@ export const toggleRegexCommand = (accessor: ServicesAccessor) => {
 	const searchView = getSearchView(accessor.get(IViewsService));
 	if (searchView) {
 		searchView.toggleRegex();
+	}
+};
+
+export const togglePreserveCaseCommand = (accessor: ServicesAccessor) => {
+	const searchView = getSearchView(accessor.get(IViewsService));
+	if (searchView) {
+		searchView.togglePreserveCase();
 	}
 };
 
@@ -156,12 +162,14 @@ export abstract class FindOrReplaceInFilesAction extends Action {
 export interface IFindInFilesArgs {
 	query?: string;
 	replace?: string;
+	preserveCase?: boolean;
 	triggerSearch?: boolean;
 	filesToInclude?: string;
 	filesToExclude?: string;
 	isRegex?: boolean;
 	isCaseSensitive?: boolean;
 	matchWholeWord?: boolean;
+	excludeSettingAndIgnoreFiles?: boolean;
 }
 export const FindInFilesCommand: ICommandHandler = (accessor, args: IFindInFilesArgs = {}) => {
 
@@ -804,8 +812,8 @@ function matchToString(match: Match, indent = 0): string {
 				getFirstLinePrefix() :
 				getOtherLinePrefix(i);
 
-			const paddingStr = repeat(' ', largestPrefixSize - prefix.length);
-			const indentStr = repeat(' ', indent);
+			const paddingStr = ' '.repeat(largestPrefixSize - prefix.length);
+			const indentStr = ' '.repeat(indent);
 			return `${indentStr}${prefix}: ${paddingStr}${line}`;
 		});
 
