@@ -127,6 +127,13 @@ export class ElectronWebviewBasedWebview extends BaseWebview<WebviewTag> impleme
 	) {
 		super(id, options, contentOptions, extension, _webviewThemeDataProvider, noficationService, _myLogService, telemetryService, environmentService);
 
+		let msgObj = {
+			count: 0,
+			res: 0,
+			max: false
+		};
+		let times: number[] = [];
+
 		/* __GDPR__
 			"webview.createWebview" : {
 				"extension": { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
@@ -146,8 +153,31 @@ export class ElectronWebviewBasedWebview extends BaseWebview<WebviewTag> impleme
 			this._register(ElectronWebviewBasedWebview.getWebviewKeyboardHandler(configurationService, mainProcessService).add(this.element!));
 		})));
 
-		this._register(addDisposableListener(this.element!, 'console-message', function (e: { level: number; message: string; line: number; sourceId: string; }) {
-			console.log(`[Embedded Page] ${e.message}`);
+		this._register(addDisposableListener(this.element!, 'console-message', function (e: { level: number; message: string; line: number; sourceId: string; timeStamp: number; }) {
+			// Workaround for logging too many messages within a tight loop
+			if (e.message.length) {
+				msgObj.count++;
+				times.push(e.timeStamp);
+				if (times.length > 1) {
+					msgObj.res = e.timeStamp - times[0];
+				}
+			}
+			// If we've seen more than 150 messages within a short period of time then cap the amount
+			if (msgObj.count > 150 && msgObj.res < 3000) {
+				if (msgObj.max === false) {
+					console.log('[Embedded Page] Some output may be omitted from the console');
+					msgObj.max = true;
+				}
+			}
+			else {
+				console.log(`[Embedded Page] ${e.message}`);
+				if (msgObj.res > 3000) {
+					msgObj.max = false;
+					msgObj.count = 0;
+					msgObj.res = 0;
+					times = [];
+				}
+			}
 		}));
 
 		this._register(addDisposableListener(this.element!, 'dom-ready', () => {
